@@ -2,6 +2,7 @@ package net.friend.controller;
 
 import java.util.List;
 import net.friend.aop.AopLogging.MaskedParam;
+import net.friend.exception.IgnoreLoggingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,8 @@ public class TestController {
   public ResponseEntity testRawParam(
       @RequestParam("id") Long id, @RequestParam("name") String name)  throws Exception{
 
-    pushException();
+//    pushException();
+    pushIgnoreLoggingException();
 
     return new ResponseEntity("testRawParam", HttpStatus.OK);
   }
@@ -33,5 +35,10 @@ public class TestController {
 
   private void pushException() {
     Integer.parseInt("abc");
+  }
+
+  private void pushIgnoreLoggingException() throws IgnoreLoggingException {
+    System.out.println("Ignore logging exception was here");
+    throw new IgnoreLoggingException();
   }
 }

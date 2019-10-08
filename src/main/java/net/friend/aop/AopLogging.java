@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import lombok.extern.slf4j.Slf4j;
+import net.friend.exception.IgnoreLoggingException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -64,13 +65,21 @@ public class AopLogging {
     logBeforeMethodWithArgs(joinPoint);
   }
 
+  /* NOTE:
+  The value of 'returning' attribute must match to name of one method's parameter ("responseEntity")
+  Data type of that parameter ('responseEntity') must be the same as returning datatype of the controller applied this AOP (ResponseEntity)
+  */
   @AfterReturning(
       value = "anyPublicOperation() && withinControllers() && hasRequestMapping() && logEnabled()",
       returning = "responseEntity")
   public void afterControllersMappingMethod(JoinPoint joinPoint, ResponseEntity responseEntity) {
+    System.out.println("after returning");
     logAfterReturningController(joinPoint, responseEntity);
   }
 
+  /* NOTE:
+  The value of 'throwing' attribute must match to name of one method's parameter ("throwable")
+  */
   @AfterThrowing(value = "anyPublicOperation() && withinControllers() && logEnabled()", throwing = "throwable")
   public void afterRepoMethodThrow(JoinPoint joinPoint, Throwable throwable) {
     logAfterThrow(joinPoint, throwable);
@@ -124,6 +133,7 @@ public class AopLogging {
   }
 
   private void logAfterThrow(JoinPoint joinPoint, Throwable throwable) {
+    if(throwable.getClass() == IgnoreLoggingException.class) return;
     String rootCause = ExceptionUtils.getRootCauseMessage(throwable);
     String stackTrace = ExceptionUtils.getFullStackTrace(throwable);
     log.error("rootCause: {}",rootCause);
