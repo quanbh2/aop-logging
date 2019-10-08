@@ -14,6 +14,7 @@ public class TestController {
 
   @GetMapping("/testNoParam")
   public ResponseEntity testNoParam() {
+
     return new ResponseEntity("testNoParam", HttpStatus.OK);
   }
 
@@ -21,16 +22,28 @@ public class TestController {
   public ResponseEntity testRawParam(
       @RequestParam("id") Long id, @RequestParam("name") String name)  throws Exception{
 
-//    pushException();
-    pushIgnoreLoggingException();
-
     return new ResponseEntity("testRawParam", HttpStatus.OK);
   }
 
   @GetMapping("/testMaskedParam")
   public ResponseEntity testMaskedParam(
       @MaskedParam(maskedSpell = "'size:' + size()") @RequestParam("name") List<String> name) {
+
     return new ResponseEntity("testMaskedParam", HttpStatus.OK);
+  }
+
+  @GetMapping("/testThrowException")
+  public ResponseEntity testThrowException() {
+    pushException();
+
+    return new ResponseEntity("testThrowException", HttpStatus.OK);
+  }
+
+  @GetMapping("/testThrowIgnoreLoggingException")
+  public ResponseEntity testThrowIgnoreLoggingException() throws IgnoreLoggingException {
+    pushIgnoreLoggingException();
+
+    return new ResponseEntity("pushIgnoreLoggingException", HttpStatus.OK);
   }
 
   private void pushException() {
