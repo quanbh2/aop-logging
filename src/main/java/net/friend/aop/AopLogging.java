@@ -4,6 +4,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.github.icovn.util.MapperUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.friend.exception.IgnoreLoggingException;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -73,7 +75,6 @@ public class AopLogging {
       value = "anyPublicOperation() && withinControllers() && hasRequestMapping() && logEnabled()",
       returning = "responseEntity")
   public void afterControllersMappingMethod(JoinPoint joinPoint, ResponseEntity responseEntity) {
-    System.out.println("after returning");
     logAfterReturningController(joinPoint, responseEntity);
   }
 
@@ -88,44 +89,37 @@ public class AopLogging {
   // private Method
 
   private void logBeforeMethodWithArgs(JoinPoint joinPoint) {
-    StringBuilder msgBuilder = new StringBuilder("before ");
-    msgBuilder.append(jointPointName(joinPoint)).append(": ");
+    StringBuilder msgBuilder = new StringBuilder();
+    String method = jointPointName(joinPoint);
+    msgBuilder.append(method).append(" START");
 
     Object[] args = joinPoint.getArgs();
     MethodSignature codeSignature = (MethodSignature) joinPoint.getSignature();
     int count = args.length;
     for (int i = 0; i < count; i++) {
-
-      msgBuilder
-          .append("(")
-          .append(i + 1)
-          .append(") ")
-          .append(codeSignature.getParameterTypes()[i].getSimpleName());
-      msgBuilder.append(" - ").append(codeSignature.getParameterNames()[i]);
-
+        msgBuilder.append(", ")
+                .append(codeSignature.getParameterNames()[i])
+                .append(": ");
       MaskedParam maskedParam =
           codeSignature.getMethod().getParameters()[i].getAnnotation(MaskedParam.class);
 
       if (maskedParam != null) {
         try {
           msgBuilder
-              .append(" masked:")
+              .append(" Masked:")
               .append(spelExpressionParser.parseRaw(maskedParam.maskedSpell()).getValue(args[i]));
         } catch (Exception e) {
           // no-op
         }
       } else {
-        msgBuilder.append(" - ").append(args[i]).append(" || ");
+        msgBuilder.append(args[i]);
       }
     }
-
     log.info(msgBuilder.toString());
   }
 
   private void logAfterReturningController(JoinPoint joinPoint, ResponseEntity responseEntity) {
-    log.info("after {}", jointPointName(joinPoint));
-    log.info("Status: {}", responseEntity.getStatusCodeValue());
-    log.info("Body: {}", responseEntity.getBody());
+    log.info("{} END, Status: {}, Body: {}", jointPointName(joinPoint), responseEntity.getStatusCodeValue(), MapperUtil.toJson(responseEntity.getBody()));
   }
 
   private String jointPointName(JoinPoint joinPoint) {

@@ -1,6 +1,10 @@
 package net.friend.controller;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import net.friend.model.TestModel;
+import net.friend.model.TestObject;
 import net.friend.aop.AopLogging.MaskedParam;
 import net.friend.exception.IgnoreLoggingException;
 import org.springframework.http.HttpStatus;
@@ -21,8 +25,12 @@ public class TestController {
   @GetMapping("/testRawParam")
   public ResponseEntity testRawParam(
       @RequestParam("id") Long id, @RequestParam("name") String name)  throws Exception{
-
-    return new ResponseEntity("testRawParam", HttpStatus.OK);
+    List<String> list = new ArrayList<>();
+    list.add("string 1");
+    list.add("String 2");
+    TestObject object = new TestObject("object name");
+    TestModel testModel = new TestModel("test name", 12, "test add", list, object);
+    return new ResponseEntity(testModel , HttpStatus.OK);
   }
 
   @GetMapping("/testMaskedParam")
